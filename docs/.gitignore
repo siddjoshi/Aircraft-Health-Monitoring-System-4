@@ -1,0 +1,55 @@
+# Documentation .gitignore
+
+# Build outputs
+_build/
+_static/
+_templates/
+site/
+dist/
+
+# Generated documentation
+*.pdf
+*.epub
+*.mobi
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# LaTeX intermediate files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Sphinx documentation
+doctrees/
+.doctrees/
+
+# MkDocs
+site/
+
+# GitBook
+_book/
+
+# VuePress
+.vuepress/dist/
+
+# Backup files
+*.backup
+*.bak

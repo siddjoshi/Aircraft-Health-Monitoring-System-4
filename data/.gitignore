@@ -1,0 +1,42 @@
+# Data Directory .gitignore
+
+# Large data files
+*.csv
+*.json
+*.xml
+*.txt
+*.dat
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.mdb
+
+# Excel files
+*.xlsx
+*.xls
+
+# Backup files
+*.backup
+*.bak
+
+# Compressed data
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Temporary data
+temp/
+tmp/
+cache/
+
+# Log files
+*.log
+
+# Keep directory structure but ignore content
+*
+!.gitignore
+!README.md
+!sample-data/
