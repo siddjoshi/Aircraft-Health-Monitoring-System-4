@@ -3,6 +3,8 @@ import './App.css';
 import Dashboard from './components/Dashboard';
 import WebSocketService from './services/WebSocketService';
 import AlertPanel from './components/AlertPanel';
+import { ThemeProvider } from './contexts/ThemeContext';
+import ThemeToggle from './components/ThemeToggle';
 
 /**
  * Main App component for the Aircraft Health Monitoring Dashboard
@@ -13,7 +15,7 @@ import AlertPanel from './components/AlertPanel';
  * @author Aircraft Monitoring Team
  * @version 1.0.0
  */
-function App() {
+function AppContent() {
   const [aircraftData, setAircraftData] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');

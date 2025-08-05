@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
       colors: {
@@ -13,7 +14,13 @@ module.exports = {
         'aviation-gray': '#374151',
         'dashboard-bg': '#0f172a',
         'card-bg': '#1e293b',
-        'border-color': '#334155'
+        'border-color': '#334155',
+        // Light mode colors
+        'light-bg': '#f8fafc',
+        'light-card': '#ffffff',
+        'light-border': '#e2e8f0',
+        'light-text': '#1e293b',
+        'light-text-secondary': '#64748b'
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
