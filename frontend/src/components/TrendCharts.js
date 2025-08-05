@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Clock, Eye, EyeOff } from 'lucide-react';
 
@@ -48,7 +48,7 @@ const TrendCharts = ({ webSocketService }) => {
   ];
 
   // Request historical data
-  const requestHistoricalData = async (newTimeRange = timeRange) => {
+  const requestHistoricalData = useCallback(async (newTimeRange = timeRange) => {
     if (!webSocketService || !webSocketService.isConnected()) {
       setError('WebSocket not connected');
       return;
@@ -64,7 +64,7 @@ const TrendCharts = ({ webSocketService }) => {
       setError('Failed to request historical data');
       setLoading(false);
     }
-  };
+  }, [webSocketService, timeRange]);
 
   // Handle historical data response
   useEffect(() => {
@@ -95,7 +95,7 @@ const TrendCharts = ({ webSocketService }) => {
       // Clean up callback
       webSocketService.onHistoricalData(null);
     };
-  }, [webSocketService, timeRange]);
+  }, [webSocketService, timeRange, requestHistoricalData]);
 
   // Handle time range change
   const handleTimeRangeChange = (newTimeRange) => {

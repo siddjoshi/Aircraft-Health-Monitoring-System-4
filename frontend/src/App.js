@@ -4,7 +4,6 @@ import Dashboard from './components/Dashboard';
 import WebSocketService from './services/WebSocketService';
 import AlertPanel from './components/AlertPanel';
 import { ThemeProvider } from './contexts/ThemeContext';
-import ThemeToggle from './components/ThemeToggle';
 
 /**
  * Main App component for the Aircraft Health Monitoring Dashboard
@@ -171,6 +170,14 @@ function AppContent() {
       {/* Alert Panel */}
       <AlertPanel alerts={alerts} />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

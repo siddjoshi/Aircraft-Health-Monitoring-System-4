@@ -2,6 +2,7 @@ package com.aircraft.monitoring.service;
 
 import com.aircraft.monitoring.model.AircraftData;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 /**
  * WebSocket service for real-time aircraft data communication.
@@ -29,10 +31,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class WebSocketService extends TextWebSocketHandler {
     
     private final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     
     @Autowired
+    @Lazy
     private DataSimulationService dataSimulationService;
+    
+    public WebSocketService() {
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+    }
     
     /**
      * Handles new WebSocket connections
