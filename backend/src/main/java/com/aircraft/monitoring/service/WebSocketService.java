@@ -11,6 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
+import java.util.Map;
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * WebSocket service for real-time aircraft data communication.
@@ -27,6 +30,9 @@ public class WebSocketService extends TextWebSocketHandler {
     
     private final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    
+    @Autowired
+    private DataSimulationService dataSimulationService;
     
     /**
      * Handles new WebSocket connections
@@ -60,11 +66,31 @@ public class WebSocketService extends TextWebSocketHandler {
         
         // Handle different message types
         try {
-            // For now, just echo back the message
-            String response = "{\"type\":\"echo\",\"message\":\"" + payload + "\"}";
-            session.sendMessage(new TextMessage(response));
+            Map<String, Object> messageMap = objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {});
+            String messageType = (String) messageMap.get("type");
+            
+            switch (messageType) {
+                case "request_historical_data":
+                    handleHistoricalDataRequest(session, messageMap);
+                    break;
+                case "request_aircraft_data":
+                    handleCurrentDataRequest(session);
+                    break;
+                default:
+                    // Echo back unknown message types for backward compatibility
+                    String response = "{\"type\":\"echo\",\"message\":\"" + payload + "\"}";
+                    session.sendMessage(new TextMessage(response));
+                    break;
+            }
         } catch (Exception e) {
             log.error("Error handling WebSocket message", e);
+            // Send error response
+            String errorResponse = "{\"type\":\"error\",\"message\":\"Failed to process message\"}";
+            try {
+                session.sendMessage(new TextMessage(errorResponse));
+            } catch (IOException ioException) {
+                log.error("Failed to send error response", ioException);
+            }
         }
     }
     
@@ -185,6 +211,61 @@ public class WebSocketService extends TextWebSocketHandler {
             
         } catch (Exception e) {
             log.error("Error broadcasting custom message", e);
+        }
+    }
+    
+    /**
+     * Handles historical data requests from WebSocket clients
+     */
+    private void handleHistoricalDataRequest(WebSocketSession session, Map<String, Object> messageMap) {
+        try {
+            int timeRange = 30; // Default to 30 minutes
+            if (messageMap.containsKey("timeRange")) {
+                timeRange = (Integer) messageMap.get("timeRange");
+            }
+            
+            List<AircraftData> historicalData = dataSimulationService.getHistoricalData(timeRange);
+            String jsonData = objectMapper.writeValueAsString(historicalData);
+            String response = "{\"type\":\"historical_data\",\"timeRange\":" + timeRange + ",\"data\":" + jsonData + "}";
+            
+            session.sendMessage(new TextMessage(response));
+            log.debug("Sent historical data to session: {} (timeRange: {} minutes, {} data points)", 
+                     session.getId(), timeRange, historicalData.size());
+                     
+        } catch (Exception e) {
+            log.error("Error handling historical data request", e);
+            try {
+                String errorResponse = "{\"type\":\"error\",\"message\":\"Failed to retrieve historical data\"}";
+                session.sendMessage(new TextMessage(errorResponse));
+            } catch (IOException ioException) {
+                log.error("Failed to send error response", ioException);
+            }
+        }
+    }
+    
+    /**
+     * Handles current data requests from WebSocket clients
+     */
+    private void handleCurrentDataRequest(WebSocketSession session) {
+        try {
+            AircraftData currentData = dataSimulationService.getCurrentData();
+            if (currentData != null) {
+                String jsonData = objectMapper.writeValueAsString(currentData);
+                String response = "{\"type\":\"aircraft_data\",\"data\":" + jsonData + "}";
+                session.sendMessage(new TextMessage(response));
+                log.debug("Sent current data to session: {}", session.getId());
+            } else {
+                String response = "{\"type\":\"error\",\"message\":\"No current data available\"}";
+                session.sendMessage(new TextMessage(response));
+            }
+        } catch (Exception e) {
+            log.error("Error handling current data request", e);
+            try {
+                String errorResponse = "{\"type\":\"error\",\"message\":\"Failed to retrieve current data\"}";
+                session.sendMessage(new TextMessage(errorResponse));
+            } catch (IOException ioException) {
+                log.error("Failed to send error response", ioException);
+            }
         }
     }
 } 

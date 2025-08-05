@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  * REST API controller for aircraft monitoring system.
@@ -171,5 +172,23 @@ public class AircraftController {
         
         log.info("Custom alert sent: {} - {}", alertType, message);
         return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Gets historical aircraft data for the specified time range
+     * 
+     * @param timeRangeMinutes The time range in minutes (default: 30, max: 30)
+     * @return Historical aircraft data for the specified time range
+     */
+    @GetMapping("/historical")
+    public ResponseEntity<List<AircraftData>> getHistoricalData(
+            @RequestParam(value = "timeRange", defaultValue = "30") int timeRangeMinutes) {
+        
+        List<AircraftData> historicalData = dataSimulationService.getHistoricalData(timeRangeMinutes);
+        
+        log.debug("Retrieved {} historical data points for {} minutes", 
+                 historicalData.size(), timeRangeMinutes);
+        
+        return ResponseEntity.ok(historicalData);
     }
 } 

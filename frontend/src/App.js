@@ -164,6 +164,7 @@ function AppContent() {
         <Dashboard 
           aircraftData={aircraftData} 
           connectionStatus={connectionStatus}
+          webSocketService={webSocketService}
         />
       </main>
 
