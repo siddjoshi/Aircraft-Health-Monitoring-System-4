@@ -5,6 +5,7 @@ import HydraulicSystem from './HydraulicSystem';
 import FlightData from './FlightData';
 import SystemStatus from './SystemStatus';
 import AnomalyControls from './AnomalyControls';
+import TrendCharts from './TrendCharts';
 
 /**
  * Main Dashboard component for aircraft health monitoring
@@ -15,7 +16,7 @@ import AnomalyControls from './AnomalyControls';
  * @author Aircraft Monitoring Team
  * @version 1.0.0
  */
-const Dashboard = ({ aircraftData, connectionStatus }) => {
+const Dashboard = ({ aircraftData, connectionStatus, webSocketService }) => {
   if (!aircraftData) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -73,6 +74,9 @@ const Dashboard = ({ aircraftData, connectionStatus }) => {
           />
         </div>
       </div>
+      
+      {/* Historical Trend Charts */}
+      <TrendCharts webSocketService={webSocketService} />
       
       {/* Additional Systems */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

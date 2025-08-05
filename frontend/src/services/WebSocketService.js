@@ -22,6 +22,7 @@ class WebSocketService {
     this.onAircraftDataCallback = null;
     this.onAlertCallback = null;
     this.onConnectionStatusCallback = null;
+    this.onHistoricalDataCallback = null;
   }
 
   /**
@@ -115,6 +116,13 @@ class WebSocketService {
           
         case 'echo':
           console.log('Echo message:', message.message);
+          break;
+          
+        case 'historical_data':
+        case 'error':
+          if (this.onHistoricalDataCallback) {
+            this.onHistoricalDataCallback(message);
+          }
           break;
           
         default:
@@ -212,6 +220,29 @@ class WebSocketService {
     };
     
     this.sendMessage(requestMessage);
+  }
+
+  /**
+   * Requests historical aircraft data from the server
+   * 
+   * @param {number} timeRangeMinutes The time range in minutes (5, 15, or 30)
+   */
+  requestHistoricalData(timeRangeMinutes = 30) {
+    const requestMessage = {
+      type: 'request_historical_data',
+      timeRange: timeRangeMinutes
+    };
+    
+    this.sendMessage(requestMessage);
+  }
+
+  /**
+   * Sets the callback for historical data updates
+   * 
+   * @param {Function} callback The callback function
+   */
+  onHistoricalData(callback) {
+    this.onHistoricalDataCallback = callback;
   }
 }
 

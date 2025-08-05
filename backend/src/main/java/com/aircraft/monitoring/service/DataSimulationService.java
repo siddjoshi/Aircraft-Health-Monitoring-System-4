@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Service responsible for simulating aircraft sensor data.
@@ -30,6 +33,10 @@ public class DataSimulationService {
     
     private final Random random = new Random();
     private AircraftData currentData;
+    
+    // Historical data storage - 30 minutes at 2-second intervals = 900 data points
+    private final ConcurrentLinkedQueue<AircraftData> historicalData = new ConcurrentLinkedQueue<>();
+    private static final int MAX_HISTORICAL_DATA_SIZE = 900; // 30 minutes worth
     
     // Simulation state
     private double currentAltitude = 35000.0;
@@ -68,6 +75,9 @@ public class DataSimulationService {
         
         // Detect anomalies
         currentData = anomalyDetectionService.detectAnomalies(currentData);
+        
+        // Store historical data
+        storeHistoricalData(currentData);
         
         // Send to WebSocket clients
         webSocketService.broadcastAircraftData(currentData);
@@ -241,5 +251,42 @@ public class DataSimulationService {
      */
     public AircraftData getCurrentData() {
         return currentData;
+    }
+    
+    /**
+     * Stores aircraft data in historical buffer
+     * Maintains a circular buffer of the last 30 minutes of data
+     */
+    private void storeHistoricalData(AircraftData data) {
+        // Add new data
+        historicalData.offer(data);
+        
+        // Remove old data if buffer is full
+        while (historicalData.size() > MAX_HISTORICAL_DATA_SIZE) {
+            historicalData.poll();
+        }
+    }
+    
+    /**
+     * Gets historical data for the specified time range in minutes
+     * 
+     * @param timeRangeMinutes The time range in minutes (5, 15, or 30)
+     * @return List of aircraft data for the specified time range
+     */
+    public List<AircraftData> getHistoricalData(int timeRangeMinutes) {
+        if (timeRangeMinutes <= 0 || timeRangeMinutes > 30) {
+            timeRangeMinutes = 30; // Default to 30 minutes
+        }
+        
+        LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(timeRangeMinutes);
+        List<AircraftData> result = new ArrayList<>();
+        
+        for (AircraftData data : historicalData) {
+            if (data.getTimestamp().isAfter(cutoffTime)) {
+                result.add(data);
+            }
+        }
+        
+        return result;
     }
 } 

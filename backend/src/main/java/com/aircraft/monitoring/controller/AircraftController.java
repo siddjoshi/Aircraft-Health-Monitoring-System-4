@@ -1,15 +1,22 @@
 package com.aircraft.monitoring.controller;
 
+import com.aircraft.monitoring.dto.AlertRequest;
 import com.aircraft.monitoring.model.AircraftData;
 import com.aircraft.monitoring.service.DataSimulationService;
+import com.aircraft.monitoring.service.SanitizationService;
 import com.aircraft.monitoring.service.WebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  * REST API controller for aircraft monitoring system.
@@ -20,11 +27,10 @@ import java.util.Map;
  * - System status information
  * 
  * @author Aircraft Monitoring Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 @RestController
 @RequestMapping("/api/aircraft")
-@CrossOrigin(origins = "*") // Allow all origins for demo purposes
 @Slf4j
 public class AircraftController {
     
@@ -33,6 +39,9 @@ public class AircraftController {
     
     @Autowired
     private WebSocketService webSocketService;
+    
+    @Autowired
+    private SanitizationService sanitizationService;
     
     /**
      * Gets the current aircraft sensor data
@@ -73,6 +82,7 @@ public class AircraftController {
      * @return Success response
      */
     @PostMapping("/simulate/engine-anomaly")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     public ResponseEntity<Map<String, String>> simulateEngineAnomaly() {
         dataSimulationService.simulateEngineAnomaly();
         
@@ -93,6 +103,7 @@ public class AircraftController {
      * @return Success response
      */
     @PostMapping("/simulate/fuel-anomaly")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     public ResponseEntity<Map<String, String>> simulateFuelAnomaly() {
         dataSimulationService.simulateFuelAnomaly();
         
@@ -113,6 +124,7 @@ public class AircraftController {
      * @return Success response
      */
     @PostMapping("/simulate/hydraulic-anomaly")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     public ResponseEntity<Map<String, String>> simulateHydraulicAnomaly() {
         dataSimulationService.simulateHydraulicAnomaly();
         
@@ -158,18 +170,41 @@ public class AircraftController {
      * @return Success response
      */
     @PostMapping("/alert")
-    public ResponseEntity<Map<String, String>> sendAlert(@RequestBody Map<String, String> alertRequest) {
-        String alertType = alertRequest.get("type");
-        String message = alertRequest.get("message");
-        String severity = alertRequest.getOrDefault("severity", "INFO");
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
+    public ResponseEntity<Map<String, String>> sendAlert(@Valid @RequestBody AlertRequest alertRequest) {
+        // Sanitize the message before broadcasting
+        String sanitizedMessage = sanitizationService.sanitizeAlertMessage(alertRequest.getMessage());
+        String sanitizedType = sanitizationService.sanitizeText(alertRequest.getType());
+        String sanitizedSeverity = sanitizationService.sanitizeText(alertRequest.getSeverity());
         
-        webSocketService.broadcastAlert(alertType, message, severity);
+        webSocketService.broadcastAlert(sanitizedType, sanitizedMessage, sanitizedSeverity);
         
         Map<String, String> response = new HashMap<>();
         response.put("message", "Alert sent successfully");
         response.put("status", "success");
         
-        log.info("Custom alert sent: {} - {}", alertType, message);
+        log.info("Custom alert sent: {} - {}", sanitizedType, sanitizedMessage);
         return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Gets historical aircraft data for the specified time range
+     * 
+     * @param timeRangeMinutes The time range in minutes (default: 30, max: 30)
+     * @return Historical aircraft data for the specified time range
+     */
+    @GetMapping("/historical")
+    public ResponseEntity<List<AircraftData>> getHistoricalData(
+            @RequestParam(value = "timeRange", defaultValue = "30") 
+            @Min(value = 1, message = "Time range must be at least 1 minute")
+            @Max(value = 30, message = "Time range cannot exceed 30 minutes")
+            int timeRangeMinutes) {
+        
+        List<AircraftData> historicalData = dataSimulationService.getHistoricalData(timeRangeMinutes);
+        
+        log.debug("Retrieved {} historical data points for {} minutes", 
+                 historicalData.size(), timeRangeMinutes);
+        
+        return ResponseEntity.ok(historicalData);
     }
 } 
