@@ -58,3 +58,5 @@ docs/site/
 # Configuration files with sensitive data
 config/production.properties
 config/secrets.properties
+
+demo.txt
