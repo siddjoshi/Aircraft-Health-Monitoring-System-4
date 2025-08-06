@@ -1,0 +1,81 @@
+# Default values for aircraft-monitoring
+replicaCount:
+  backend: 2
+  frontend: 2
+
+image:
+  registry: "your-acr-name.azurecr.io"
+  backend:
+    repository: aircraft-monitoring-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: aircraft-monitoring-frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+service:
+  backend:
+    type: ClusterIP
+    port: 8080
+  frontend:
+    type: ClusterIP
+    port: 80
+
+ingress:
+  enabled: true
+  className: "azure/application-gateway"
+  annotations:
+    appgw.ingress.kubernetes.io/ssl-redirect: "false"
+    appgw.ingress.kubernetes.io/connection-draining: "true"
+    appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
+    appgw.ingress.kubernetes.io/backend-path-prefix: "/"
+  hosts:
+    - host: aircraft-monitoring.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /websocket
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+
+resources:
+  backend:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  frontend:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+autoscaling:
+  enabled: false
+  backend:
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+  frontend:
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  backend:
+    SPRING_PROFILES_ACTIVE: "production"

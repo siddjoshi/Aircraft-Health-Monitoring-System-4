@@ -62,8 +62,12 @@ This demo application showcases how coding assistants can generate boilerplate, 
 - Java 17 or higher
 - Node.js 16 or higher
 - Maven 3.6 or higher
+- Docker (for containerized deployment)
+- Azure CLI (for AKS deployment)
 
-### Backend Setup
+### Local Development
+
+#### Backend Setup
 ```bash
 # Navigate to backend directory
 cd backend
@@ -90,6 +94,51 @@ npm start
 ```
 
 The frontend will start on `http://localhost:3000`
+
+### Docker Deployment
+
+#### Local Testing with Docker Compose
+```bash
+# Start all services
+docker-compose up --build
+
+# Or use the provided script
+./scripts/local-dev.sh
+```
+
+#### Build Individual Docker Images
+```bash
+# Build backend image
+docker build -t aircraft-monitoring-backend ./backend
+
+# Build frontend image
+docker build -t aircraft-monitoring-frontend ./frontend
+```
+
+### Azure Kubernetes Service (AKS) Deployment
+
+Deploy the application to Azure Kubernetes Service for production use.
+
+#### Quick Deploy
+```bash
+# Set your Azure resources
+export ACR_NAME="your-acr-name"
+export RESOURCE_GROUP="your-resource-group"
+export AKS_CLUSTER_NAME="your-aks-cluster"
+
+# Run the deployment script
+./scripts/deploy-to-aks.sh
+```
+
+#### Manual Deployment
+See [AKS Deployment Guide](./docs/AKS-DEPLOYMENT.md) for detailed instructions.
+
+#### Using Helm (Advanced)
+```bash
+# Install with Helm
+helm install aircraft-monitoring ./helm/aircraft-monitoring \
+  --set image.registry=your-acr-name.azurecr.io
+```
 
 ## 📊 Dashboard Features
 
@@ -157,7 +206,10 @@ The system monitors for critical anomalies:
 
 ```
 monitoring-app/
-├── backend/                 # Java Spring Boot backend
+├── .github/
+│   └── workflows/
+│       └── deploy-aks.yml     # CI/CD pipeline for AKS
+├── backend/                   # Java Spring Boot backend
 │   ├── src/main/java/com/aircraft/monitoring/
 │   │   ├── AircraftMonitoringApplication.java
 │   │   ├── config/
@@ -170,9 +222,10 @@ monitoring-app/
 │   │       ├── AnomalyDetectionService.java
 │   │       ├── DataSimulationService.java
 │   │       └── WebSocketService.java
+│   ├── Dockerfile             # Backend container image
 │   ├── pom.xml
 │   └── README.md
-├── frontend/               # React + Tailwind CSS frontend
+├── frontend/                  # React + Tailwind CSS frontend
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Dashboard.js
@@ -187,11 +240,24 @@ monitoring-app/
 │   │   │   └── WebSocketService.js
 │   │   ├── App.js
 │   │   └── App.css
+│   ├── Dockerfile             # Frontend container image
+│   ├── nginx.conf             # Nginx configuration
 │   ├── package.json
 │   └── README.md
-├── data/                   # Sample aircraft sensor data
-├── docs/                   # Documentation
-└── README.md              # This file
+├── k8s/                       # Kubernetes manifests
+│   ├── backend.yaml           # Backend deployment and service
+│   ├── frontend.yaml          # Frontend deployment and service
+│   └── ingress.yaml           # Ingress configuration
+├── helm/                      # Helm chart
+│   └── aircraft-monitoring/   # Helm chart for advanced deployment
+├── scripts/                   # Deployment scripts
+│   ├── deploy-to-aks.sh       # AKS deployment script
+│   └── local-dev.sh           # Local development script
+├── docs/                      # Documentation
+│   └── AKS-DEPLOYMENT.md      # AKS deployment guide
+├── data/                      # Sample aircraft sensor data
+├── docker-compose.yml         # Local Docker Compose setup
+└── README.md                  # This file
 ```
 
 ## 🧪 Testing
@@ -240,6 +306,7 @@ npm test
 
 - [Backend Documentation](./backend/README.md)
 - [Frontend Documentation](./frontend/README.md)
+- [AKS Deployment Guide](./docs/AKS-DEPLOYMENT.md)
 - [API Documentation](./docs/API.md)
 
 ## 🤝 Contributing
