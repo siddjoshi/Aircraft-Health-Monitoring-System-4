@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, XCircle, Info, X } from 'lucide-react';
+import { AlertTriangle, XCircle, Info } from 'lucide-react';
 
 /**
  * Alert Panel component for displaying real-time alerts and notifications
@@ -65,11 +65,11 @@ const AlertPanel = ({ alerts }) => {
                   <h4 className={`font-semibold ${getAlertColor(alert.severity)}`}>
                     {alert.alertType || 'System Alert'}
                   </h4>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
                     {new Date().toLocaleTimeString()}
                   </span>
                 </div>
-                <p className="text-white text-sm mt-1">
+                <p className="text-gray-800 dark:text-white text-sm mt-1">
                   {alert.message}
                 </p>
                 {alert.severity && (
