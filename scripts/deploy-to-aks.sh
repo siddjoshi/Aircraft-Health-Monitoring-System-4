@@ -63,9 +63,15 @@ az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME
 
 # Deploy to AKS
 echo "🚢 Deploying to AKS..."
+kubectl apply -f k8s/configmap.yaml
 kubectl apply -f k8s/backend.yaml
 kubectl apply -f k8s/frontend.yaml
 kubectl apply -f k8s/ingress.yaml
+
+# Deploy optional production features
+echo "📊 Deploying autoscaling and network policies..."
+kubectl apply -f k8s/hpa.yaml
+kubectl apply -f k8s/network-policy.yaml
 
 # Wait for deployments to be ready
 echo "⏳ Waiting for deployments to be ready..."
