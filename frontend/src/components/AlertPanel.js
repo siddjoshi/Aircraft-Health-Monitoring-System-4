@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, XCircle, Info, X } from 'lucide-react';
+import { AlertTriangle, XCircle, Info } from 'lucide-react';
 
 /**
  * Alert Panel component for displaying real-time alerts and notifications
