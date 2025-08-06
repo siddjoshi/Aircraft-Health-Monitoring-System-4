@@ -3,6 +3,8 @@ import './App.css';
 import Dashboard from './components/Dashboard';
 import WebSocketService from './services/WebSocketService';
 import AlertPanel from './components/AlertPanel';
+import ThemeToggle from './components/ThemeToggle';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 /**
  * Main App component for the Aircraft Health Monitoring Dashboard
@@ -105,9 +107,24 @@ function App() {
   }, []);
 
   return (
-    <div className="App min-h-screen bg-dashboard-bg text-white">
+    <ThemeProvider>
+      <AppContent 
+        aircraftData={aircraftData}
+        alerts={alerts}
+        connectionStatus={connectionStatus}
+      />
+    </ThemeProvider>
+  );
+}
+
+/**
+ * Inner App component that uses theme context
+ */
+const AppContent = ({ aircraftData, alerts, connectionStatus }) => {
+  return (
+    <div className="App min-h-screen bg-dashboard-bg-light dark:bg-dashboard-bg text-text-primary-light dark:text-white transition-colors duration-200">
       {/* Header */}
-      <header className="bg-card-bg border-b border-border-color">
+      <header className="bg-card-bg-light dark:bg-card-bg border-b border-border-color-light dark:border-border-color transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
@@ -115,17 +132,19 @@ function App() {
                 <span className="text-white font-bold text-sm">✈</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-text-primary-light dark:text-white">
                   Aircraft Health Monitoring System
                 </h1>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-text-secondary-light dark:text-gray-400">
                   Real-Time Aviation Dashboard
                 </p>
               </div>
             </div>
             
-            {/* Connection Status */}
+            {/* Theme Toggle and Connection Status */}
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              
               <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
                 connectionStatus === 'connected' 
                   ? 'bg-aviation-green text-white' 
@@ -145,7 +164,7 @@ function App() {
                 <span className="capitalize">{connectionStatus === 'polling' ? 'REST API' : connectionStatus}</span>
               </div>
               
-              <div className="text-sm text-gray-400">
+              <div className="text-sm text-text-secondary-light dark:text-gray-400">
                 {aircraftData ? (
                   <span>Last Update: {new Date(aircraftData.timestamp).toLocaleTimeString()}</span>
                 ) : (
@@ -169,6 +188,6 @@ function App() {
       <AlertPanel alerts={alerts} />
     </div>
   );
-}
+};
 
 export default App; 
