@@ -1,0 +1,15 @@
+apiVersion: v2
+name: aircraft-monitoring
+description: A Helm chart for Aircraft Health Monitoring System
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+keywords:
+  - aircraft
+  - monitoring
+  - real-time
+  - dashboard
+
+maintainers:
+  - name: Aircraft Monitoring Team

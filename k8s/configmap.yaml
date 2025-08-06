@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  labels:
+    app: aircraft-monitoring-backend
+data:
+  application-production.properties: |
+    # Production configuration for Aircraft Monitoring Backend
+    server.port=8080
+    
+    # Logging configuration
+    logging.level.root=INFO
+    logging.level.com.aircraft.monitoring=DEBUG
+    logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
+    
+    # WebSocket configuration
+    spring.websocket.allowed-origins=*
+    
+    # Actuator endpoints
+    management.endpoints.web.exposure.include=health,info,metrics
+    management.endpoint.health.show-details=always
+    
+    # Application info
+    info.app.name=Aircraft Health Monitoring System
+    info.app.description=Real-time aircraft sensor monitoring and anomaly detection
+    info.app.version=1.0.0
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secrets
+  labels:
+    app: aircraft-monitoring-backend
+type: Opaque
+stringData:
+  # Add any sensitive configuration here
+  # Example: database.password=your-secret-password
